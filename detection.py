@@ -3,6 +3,17 @@ import dlib
 import time
 import numpy as np
 from scipy.spatial import distance as dist
+from playsound import playsound
+import threading
+
+alarm_playing = False 
+
+# Function to play alarm sound in a separate thread
+def play_alarm():
+    global alarm_playing
+    playsound("alarm_sound.mp3")  # Play sound
+    alarm_playing = False  # Reset flag after sound ends
+
 
 
 # Eye Aspect Ratio (EAR) Calculation
@@ -59,8 +70,14 @@ while True:
                 if duration > EYE_CLOSURE_TIME:
                     cv2.putText(frame, "ALERT! Eyes closed!", (50, 50),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
+
+                    # Start alarm if not already playing
+                    if not alarm_playing:
+                        alarm_playing = True
+                        threading.Thread(target=play_alarm, daemon=True).start()
         else:
             start_time = None  # Reset if eyes are open
+            alarm_playing = False  # Stop alarm
 
         # Draw eye landmarks
         for (x, y) in np.concatenate((left_eye, right_eye)):
