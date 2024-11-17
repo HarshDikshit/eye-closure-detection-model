@@ -5,16 +5,19 @@ import numpy as np
 from scipy.spatial import distance as dist
 from playsound import playsound
 import threading
+import pygame
 
-alarm_playing = False 
+# Initialize Pygame for sound
+pygame.mixer.init()
+
+# Load the alarm sound
+ALARM_SOUND = "alarm_sound.mp3"
+pygame.mixer.music.load(ALARM_SOUND)
 
 # Function to play alarm sound in a separate thread
 def play_alarm():
-    global alarm_playing
-    playsound("alarm_sound.mp3")  # Play sound
-    alarm_playing = False  # Reset flag after sound ends
-
-
+    if not pygame.mixer.music.get_busy():  # Check if sound is already playing
+        pygame.mixer.music.play()
 
 # Eye Aspect Ratio (EAR) Calculation
 def calculate_ear(eye):
@@ -72,12 +75,9 @@ while True:
                                 cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
 
                     # Start alarm if not already playing
-                    if not alarm_playing:
-                        alarm_playing = True
-                        threading.Thread(target=play_alarm, daemon=True).start()
+                    threading.Thread(target=play_alarm, daemon=True).start()
         else:
             start_time = None  # Reset if eyes are open
-            alarm_playing = False  # Stop alarm
 
         # Draw eye landmarks
         for (x, y) in np.concatenate((left_eye, right_eye)):
@@ -89,3 +89,5 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+pygame.mixer.quit()
+
